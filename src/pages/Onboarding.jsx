@@ -41,14 +41,9 @@ function Onboarding() {
             Secure Onboarding Protocol
           </span>
         </div>
-        <h1 className="font-display text-burgundy-dark text-3xl font-bold mb-2">
+                <h1 className="font-display text-burgundy-dark text-3xl font-bold mb-6">
           Create your safety profile
         </h1>
-        <p className="text-burgundy/70 text-sm mb-6">
-          Set up your real-time trusted emergency circle, automated SOS alert
-          broadcasts, and personalized night-lit navigation routes.
-        </p>
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Field
             icon={User}
@@ -102,11 +97,11 @@ function Onboarding() {
             </div>
           </div>
 
-          <button
+                    <button
             type="submit"
             className="mt-4 bg-burgundy text-cream font-semibold py-3 rounded-full hover:bg-burgundy-light transition"
           >
-            Complete Registration & Enter SheSuraksha →
+            Complete Registration
           </button>
 
           {submitted && (

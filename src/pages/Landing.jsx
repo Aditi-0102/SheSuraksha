@@ -133,7 +133,7 @@ function Landing() {
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-4 relative z-10">
         <img src={faceIcon} alt="SheSuraksha" className="w-28 h-auto mx-auto" />
-        <h1 className="font-display text-cream text-6xl md:text-7xl font-bold drop-shadow-[0_0_35px_rgba(212,162,76,0.35)] flex items-center gap-2 -mt-2">
+                <h1 className="font-display text-gold text-6xl md:text-7xl font-bold drop-shadow-[0_0_35px_rgba(212,162,76,0.35)] flex items-center gap-2 -mt-2">
           SheSuraksha
           <span className="text-gold text-4xl">✦</span>
         </h1>

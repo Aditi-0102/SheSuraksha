@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-burgundy-dark: #3a0d08;
-  --color-burgundy: #8f1e10;
-  --color-burgundy-light: #b8321e;
+  --color-burgundy-dark: #5c0013;
+  --color-burgundy: #850021;
+  --color-burgundy-light: #a3334d;
   --color-gold: #d4a24c;
   --color-gold-light: #e8c68a;
-  --color-cream: #ece4cf;
+  --color-cream: #fefaef;
 
   --font-display: "Playfair Display", serif;
   --font-body: "Inter", sans-serif;
@@ -14,4 +14,26 @@
 
 body {
   font-family: var(--font-body);
+}
+@keyframes wave-move-1 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes wave-move-2 {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.animate-wave-1 {
+  animation: wave-move-1 14s linear infinite;
+}
+.animate-wave-2 {
+  animation: wave-move-2 18s linear infinite;
+}
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
 }
