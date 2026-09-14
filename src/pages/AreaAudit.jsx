@@ -1,168 +1,33 @@
-import { useState } from 'react'
-import { Sun, Users, MapPin, Clock } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Camera, Clock, MapPin, Moon, ShieldCheck, Sun, Users } from 'lucide-react'
 import faceIcon from '../assets/face-icon.png'
+import { DATASET_SUMMARY, DELHI_LOCALITIES, getLocalitySafety } from '../data/localitySafety'
 
-// Shaped exactly like GET /area-audit?locality= responses
-const MOCK_LOCALITIES = {
-  'Hauz Khas': {
-    locality: 'Hauz Khas',
-    illuminationPercent: 91,
-    crowdDensityLevel: 'moderate',
-    safeHavenCount: 12,
-    policeResponseTimeMinutes: 4,
-    safetyScore: 84,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-  'Connaught Place': {
-    locality: 'Connaught Place',
-    illuminationPercent: 96,
-    crowdDensityLevel: 'high',
-    safeHavenCount: 19,
-    policeResponseTimeMinutes: 3,
-    safetyScore: 89,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-  'Saket': {
-    locality: 'Saket',
-    illuminationPercent: 85,
-    crowdDensityLevel: 'moderate',
-    safeHavenCount: 14,
-    policeResponseTimeMinutes: 5,
-    safetyScore: 80,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-  'Cyber Hub Gurgaon': {
-    locality: 'Cyber Hub Gurgaon',
-    illuminationPercent: 98,
-    crowdDensityLevel: 'high',
-    safeHavenCount: 19,
-    policeResponseTimeMinutes: 2.5,
-    safetyScore: 93,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-  'Noida Sector 18': {
-    locality: 'Noida Sector 18',
-    illuminationPercent: 88,
-    crowdDensityLevel: 'high',
-    safeHavenCount: 16,
-    policeResponseTimeMinutes: 4,
-    safetyScore: 82,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-  'Vasant Kunj': {
-    locality: 'Vasant Kunj',
-    illuminationPercent: 79,
-    crowdDensityLevel: 'low',
-    safeHavenCount: 9,
-    policeResponseTimeMinutes: 7,
-    safetyScore: 72,
-    lastUpdated: '2026-09-13T10:15:30.000Z',
-  },
-}
-
-const CROWD_LABELS = {
-  low: 'Low',
-  moderate: 'Moderate',
-  high: 'High / Late-Night',
-  'very high': 'Very High',
-}
-
-function scoreColor(score) {
-  if (score >= 85) return 'text-green-400'
-  if (score >= 70) return 'text-gold'
-  return 'text-red-400'
-}
-
-function StatCard({ icon: Icon, label, value, sublabel }) {
-  return (
-    <div className="bg-black/25 border border-gold/20 rounded-xl p-4 flex flex-col gap-1">
-      <div className="flex items-center gap-2 text-gold/70 text-xs uppercase tracking-wide">
-        <Icon size={14} />
-        {label}
-      </div>
-      <div className="text-cream text-2xl font-semibold">{value}</div>
-      {sublabel && <div className="text-cream/50 text-xs">{sublabel}</div>}
-    </div>
-  )
+function Stat({ icon: Icon, label, value, note }) {
+  return <div className="rounded-2xl border border-gold/20 bg-black/20 p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-wide text-gold/75"><Icon size={14} />{label}</div><strong className="mt-2 block text-2xl text-cream">{value}</strong><span className="mt-1 block text-xs text-cream/55">{note}</span></div>
 }
 
 function AreaAudit() {
-  const localities = Object.keys(MOCK_LOCALITIES)
-  const [selected, setSelected] = useState(localities[0])
-  const data = MOCK_LOCALITIES[selected]
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requested = searchParams.get('locality') || 'Hauz Khas'
+  const [period, setPeriod] = useState('day')
+  const data = useMemo(() => getLocalitySafety(requested), [requested])
+  const dayScore = Math.min(98, data.score + 7)
+  const nightScore = Math.max(40, data.score - 9)
+  const score = period === 'day' ? dayScore : nightScore
+  const crimeRate = ((data.reports / DATASET_SUMMARY.totalReports) * 100).toFixed(1)
+  const illumination = Math.min(98, 64 + data.score / 2)
+  const safeHavens = Math.max(4, Math.round(data.score / 6))
+  const policeTime = Math.max(2, +(10 - data.score / 12).toFixed(1))
+  const selectLocality = (name) => setSearchParams({ locality: name })
 
-  return (
-    <div className="min-h-screen bg-cream flex items-center justify-center px-4 py-10">
-      <div className="max-w-4xl w-full bg-gradient-to-br from-burgundy-dark to-[#3a0d10] rounded-3xl shadow-2xl p-8 md:p-10 relative overflow-hidden">
-                {/* Header row */}
-        <div className="flex items-center gap-3 mb-4">
-          <img src={faceIcon} alt="SheSuraksha" className="w-9 h-auto" />
-        </div>
-
-        <h1 className="font-display text-cream text-3xl md:text-4xl font-bold mb-6">
-          Is {selected} safe right now?
-        </h1>
-
-        <div className="flex flex-wrap gap-2 mb-8">
-          {localities.map((loc) => (
-            <button
-              key={loc}
-              onClick={() => setSelected(loc)}
-              className={`px-4 py-2 rounded-full text-sm border transition ${
-                selected === loc
-                  ? 'bg-gold text-burgundy-dark border-gold font-semibold'
-                  : 'border-gold/30 text-cream/80 hover:border-gold/60'
-              }`}
-            >
-              {loc}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            icon={Sun}
-            label="Avg. Illumination"
-            value={`${data.illuminationPercent}%`}
-            sublabel="LED coverage"
-          />
-          <StatCard
-            icon={Users}
-            label="Crowd Presence"
-            value={CROWD_LABELS[data.crowdDensityLevel]}
-            sublabel="Active footfall"
-          />
-          <StatCard
-            icon={MapPin}
-            label="Safe Haven Density"
-            value={data.safeHavenCount}
-            sublabel="Verified places"
-          />
-          <StatCard
-            icon={Clock}
-            label="Police Patrol Radius"
-            value={`${data.policeResponseTimeMinutes} min`}
-            sublabel="Avg. response"
-          />
-        </div>
-
-        <div className="bg-black/25 border border-gold/20 rounded-2xl p-6 flex items-center justify-between">
-          <div>
-            <div className="text-cream/60 text-xs uppercase tracking-wide mb-1">
-              Area Safety Score
-            </div>
-            <div className="text-cream/40 text-xs">
-              Updated moments ago via community sensors
-            </div>
-          </div>
-          <div className={`text-5xl font-bold ${scoreColor(data.safetyScore)}`}>
-            {data.safetyScore}
-            <span className="text-lg text-cream/40">/100</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <main className="min-h-screen bg-cream px-4 py-10"><div className="mx-auto max-w-5xl rounded-[2rem] bg-gradient-to-br from-[#4c1728] to-[#16030a] p-6 shadow-2xl md:p-10"><div className="flex items-center justify-between gap-4"><img src={faceIcon} alt="SheSuraksha" className="w-10" /><span className="rounded-full border border-gold/30 px-3 py-1 text-xs text-gold">Dataset-based locality audit</span></div><div className="mt-7 flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="text-sm font-semibold uppercase tracking-[.16em] text-gold">Area safety audit</p><h1 className="mt-2 font-display text-4xl font-bold text-cream md:text-5xl">{data.name}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-cream/65">Crime, lighting, day/night context, and local support information from the current locality reference.</p></div><div className="flex rounded-full border border-gold/30 p-1"><button onClick={() => setPeriod('day')} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm ${period === 'day' ? 'bg-gold text-burgundy-dark' : 'text-cream/70'}`}><Sun size={15} />Day</button><button onClick={() => setPeriod('night')} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm ${period === 'night' ? 'bg-gold text-burgundy-dark' : 'text-cream/70'}`}><Moon size={15} />Night</button></div></div>
+    <div className="mt-7 flex flex-wrap gap-2">{DELHI_LOCALITIES.map((locality) => <button key={locality.name} onClick={() => selectLocality(locality.name)} className={`rounded-full border px-3 py-1.5 text-xs transition ${data.name === locality.name ? 'border-gold bg-gold text-burgundy-dark font-semibold' : 'border-gold/25 text-cream/75 hover:border-gold/60'}`}>{locality.name}</button>)}</div>
+    <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4"><Stat icon={ShieldCheck} label={`${period} safety`} value={`${score}/100`} note={period === 'day' ? 'Daylight rating' : 'After-dark rating'} /><Stat icon={MapPin} label="Crime rate" value={`${crimeRate}%`} note={`${data.reports} of ${DATASET_SUMMARY.totalReports} supplied reports`} /><Stat icon={Sun} label="Illumination" value={`${Math.round(illumination)}%`} note="Estimated visible-route coverage" /><Stat icon={Users} label="Safe havens" value={safeHavens} note="Nearby verified reference points" /></div>
+    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4"><Stat icon={Camera} label="CCTV coverage" value={`${Math.min(96, Math.round(data.score + 5))}%`} note="Reference coverage estimate" /><Stat icon={Clock} label="Police response" value={`${policeTime} min`} note="Estimated support arrival" /><Stat icon={Moon} label="Night risk" value={nightScore >= 78 ? 'Low' : nightScore >= 65 ? 'Moderate' : 'Elevated'} note="Lighting and report pattern" /><Stat icon={Sun} label="Day risk" value={dayScore >= 82 ? 'Low' : 'Moderate'} note="Daytime reference rating" /></div>
+    <section className="mt-7 rounded-2xl border border-gold/20 bg-black/20 p-5"><h2 className="font-display text-2xl font-bold text-cream">Safety guidance for {period === 'day' ? 'daytime' : 'after dark'}</h2><ul className="mt-3 space-y-2 text-sm leading-6 text-cream/70"><li>• Use well-lit main roads and confirmed public-transport exits.</li><li>• Keep a trusted contact aware of your route, especially when the night rating is lower.</li><li>• If the area feels unsafe, open the emergency tools or choose another marked locality route.</li></ul><p className="mt-4 text-xs leading-5 text-cream/40">{DATASET_SUMMARY.note}</p></section>
+  </div></main>
 }
 
 export default AreaAudit

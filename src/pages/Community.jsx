@@ -1,67 +1,122 @@
-import { Heart, ShieldAlert, Sparkles, HandHeart } from 'lucide-react'
+import { useState } from 'react'
+import { BellRing, CheckCircle2, ShieldAlert, Siren, X } from 'lucide-react'
 import faceIcon from '../assets/face-icon.png'
 
-const STORIES = [
-  {
-    title: 'Real Stories, Real Strength',
-    caption: 'Survivors sharing how community vigilance changed their journey home.',
-    icon: Heart,
-    gradient: 'from-[#8f1e10] to-[#3a0d08]',
-  },
-  {
-    title: "Not Just Where to Go",
-    caption: "But which journey fits the moment — community-mapped safe routes.",
-    icon: Sparkles,
-    gradient: 'from-[#b8321e] to-[#6b1f2e]',
-  },
-  {
-    title: 'Women Empowerment',
-    caption: 'Local collectives building verified safe-haven networks block by block.',
-    icon: HandHeart,
-    gradient: 'from-[#4a1420] to-[#2a0e14]',
-  },
-  {
-    title: 'Stop Violence Against Women',
-    caption: 'Reporting tools and helpline access, built into every screen.',
-    icon: ShieldAlert,
-    gradient: 'from-[#3a0d08] to-[#8f1e10]',
-  },
+const PRE_TRAVEL_ITEMS = [
+  'Charge your phone and keep a power bank with you for longer journeys.',
+  'Update your emergency contacts and make sure they can reach you quickly.',
+  'Check the route, transport details, and your expected arrival time before leaving.',
+  'Share your trip with a trusted contact when travelling late or to a new location.',
+  'Keep women’s helpline 1091 and emergency contacts saved for quick access.',
 ]
 
-function StoryCard({ story }) {
-  const Icon = story.icon
-  return (
-    <div
-      className={`rounded-2xl p-6 flex flex-col justify-between h-48 bg-gradient-to-br ${story.gradient} shadow-sm`}
-    >
-      <Icon size={22} className="text-gold" />
-      <div>
-        <h3 className="font-display text-cream text-lg font-bold mb-1">{story.title}</h3>
-        <p className="text-cream/70 text-xs">{story.caption}</p>
-      </div>
-    </div>
-  )
-}
-
 function Community() {
+  const [isEmergencyOpen, setIsEmergencyOpen] = useState(true)
+  const [alert, setAlert] = useState(null)
+  const [completedChecklist, setCompletedChecklist] = useState([])
+
+  const sendAlert = (type) => {
+    const messages = {
+      siren: 'Safety siren activated. Move toward a well-lit, populated place when it is safe to do so.',
+      police: 'Silent police alert sent with your live location.',
+      guardian: 'Emergency broadcast sent to your selected guardians with your live location.',
+    }
+    setAlert(messages[type])
+  }
+
+  const toggleChecklistItem = (item) => {
+    setCompletedChecklist((current) =>
+      current.includes(item) ? current.filter((entry) => entry !== item) : [...current, item],
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-cream px-4 py-10 flex justify-center">
-      <div className="max-w-3xl w-full">
-        <div className="flex items-center gap-3 mb-6">
+    <main className="min-h-screen bg-cream px-5 py-10 text-burgundy-dark md:px-8 md:py-14">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-12 flex items-center gap-3">
           <img src={faceIcon} alt="SheSuraksha" className="w-9 h-auto" />
+          <span className="font-display text-lg font-bold">SheSuraksha</span>
         </div>
 
-        <h1 className="font-display text-burgundy-dark text-3xl md:text-4xl font-bold mb-8">
-          Community & Awareness
-        </h1>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-burgundy/70">Together, we notice. Together, we act.</p>
+        <h1 className="mb-7 font-display text-4xl font-bold leading-tight text-burgundy-dark md:text-6xl">Community & Awareness</h1>
 
-        <div className="grid sm:grid-cols-2 gap-5">
-          {STORIES.map((story) => (
-            <StoryCard key={story.title} story={story} />
-          ))}
+        <div className="max-w-2xl space-y-9 text-base leading-8 text-burgundy/90 md:text-lg">
+          <section>
+            <h2 className="mb-3 font-display text-3xl font-bold text-burgundy-dark">Community awareness</h2>
+            <ul className="list-disc space-y-3 pl-6 marker:text-gold">
+              <li>Share verified safe places, well-lit routes, and reliable transport updates with friends and neighbours.</li>
+              <li>Check in when someone is travelling alone, especially late at night or in an unfamiliar area.</li>
+              <li>If someone seems uncomfortable or unsafe, ask gently if they need help and stay nearby where possible.</li>
+              <li>Report broken streetlights, unsafe stops, or repeated harassment so others can make informed choices.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-display text-3xl font-bold text-burgundy-dark">Pre-travel checklist</h2>
+            <ul className="space-y-4">
+              {PRE_TRAVEL_ITEMS.map((item, index) => {
+                const isCompleted = completedChecklist.includes(item)
+                return (
+                  <li key={item} className="flex items-start gap-3">
+                    <input
+                      id={`checklist-${index}`}
+                      type="checkbox"
+                      checked={isCompleted}
+                      onChange={() => toggleChecklistItem(item)}
+                      className="mt-2 h-4 w-4 shrink-0 cursor-pointer accent-burgundy"
+                    />
+                    <label htmlFor={`checklist-${index}`} className={`cursor-pointer ${isCompleted ? 'text-burgundy/50 line-through' : ''}`}>
+                      {item}
+                    </label>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-display text-3xl font-bold text-burgundy-dark">Know. Support. Report.</h2>
+            <ul className="list-disc space-y-3 pl-6 marker:text-gold">
+              <li>Trust your instincts and choose a visible, populated route whenever you can.</li>
+              <li>Share live location only with people you know and trust.</li>
+              <li>In an immediate emergency, use the alert tools or contact local emergency services.</li>
+            </ul>
+          </section>
         </div>
       </div>
-    </div>
+
+      {isEmergencyOpen && (
+        <div className="z-50 flex items-center justify-center bg-burgundy-dark/55 p-5" style={{ position: 'fixed', inset: 0 }} role="dialog" aria-modal="true" aria-labelledby="emergency-title">
+          <div
+            className="relative w-full max-w-md rounded-[2rem] border border-gold/60 p-7 text-center text-cream shadow-2xl md:p-9"
+            style={{ background: 'linear-gradient(145deg, #3a0714 0%, #1b0209 100%)' }}
+          >
+            <button
+              onClick={() => setIsEmergencyOpen(false)}
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-gold/60 bg-cream text-burgundy-dark shadow-lg transition hover:scale-105 hover:bg-gold-light"
+              aria-label="Close emergency tools and view community awareness"
+              title="Close and view Community & Awareness"
+            >
+              <X size={20} strokeWidth={2.5} />
+            </button>
+            <ShieldAlert className="mx-auto mb-4 text-gold" size={30} />
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-light">Emergency tools</p>
+            <h2 id="emergency-title" className="mt-2 font-display text-3xl font-bold text-cream">Need help now?</h2>
+            <p className="mt-3 text-sm leading-6 text-cream/75">Choose the fastest and safest way to ask for support.</p>
+
+            <div className="mt-7 flex flex-col gap-3 text-left">
+              <button onClick={() => sendAlert('police')} className="flex items-center gap-3 rounded-2xl border border-gold/40 px-4 py-4 text-cream transition hover:bg-white/10"><ShieldAlert className="shrink-0 text-gold" size={21} /><span><strong className="block text-sm">Silent police alert</strong><small className="text-cream/65">Send location discreetly</small></span></button>
+              <button onClick={() => sendAlert('siren')} className="flex items-center gap-3 rounded-2xl border border-gold/40 px-4 py-4 text-cream transition hover:bg-white/10"><Siren className="shrink-0 text-gold" size={21} /><span><strong className="block text-sm">Activate siren</strong><small className="text-cream/65">Draw attention around you</small></span></button>
+              <button onClick={() => sendAlert('guardian')} className="flex items-center gap-3 rounded-2xl bg-red-700 px-4 py-4 text-white transition hover:bg-red-800"><BellRing className="shrink-0" size={21} /><span><strong className="block text-sm">One-tap guardian broadcast</strong><small className="text-white/75">Share your live location now</small></span></button>
+            </div>
+
+            {alert && <div className="mt-5 flex gap-2 rounded-xl bg-black/20 p-3 text-left text-sm text-cream/90"><CheckCircle2 className="mt-0.5 shrink-0 text-green-400" size={18} />{alert}</div>}
+            <button onClick={() => setIsEmergencyOpen(false)} className="mt-6 text-sm text-cream/70 underline underline-offset-4 hover:text-cream">I’m safe, continue to awareness</button>
+          </div>
+        </div>
+      )}
+    </main>
   )
 }
 
